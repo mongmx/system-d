@@ -1,0 +1,10 @@
+stages:
+  - build
+  
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo test-ci

@@ -1,0 +1,37 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+.glide/
+.idea/app
+*.swp
+*.iml
+.vscode/
+app
+/paybox_go
+gin-bin
+TODO
+assets/*.csv
+vendor/
+node_modules/
+doc
+secret/
+migrations/dbconfig.yml
+tests/cypress/screenshots/
+tests/cypress/videos/
+/tests/sms.txt
+tests/node_modules/
+tmp/
+/workspace.xml
+.idea/
+data

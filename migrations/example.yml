@@ -1,0 +1,5 @@
+integration:
+  dialect: postgres
+  datasource: host=localhost port=54321 user=root password=root dbname=root sslmode=disable
+  dir: migrations/postgres
+  table: migrations
