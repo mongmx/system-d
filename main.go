@@ -10,6 +10,7 @@ import (
 	"github.com/mongmx/system-d/application/domain/auth"
 	"github.com/mongmx/system-d/application/domain/member"
 	"github.com/mongmx/system-d/application/infrastructure/postgres"
+	"github.com/mongmx/system-d/application/middleware"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/chenjiandongx/ginprom"
@@ -31,11 +32,7 @@ var (
 )
 
 func main() {
-	conn := fmt.Sprintf(
-		"dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
-		dbName, dbUser, dbPass, dbHost, dbPort, sslMode,
-	)
-	db, err := sql.Open("postgres", conn)
+	db, err := connectPostgres()
 	must(err)
 	defer func() {
 		err := db.Close()
@@ -72,6 +69,7 @@ func routerAPI(db *sql.DB) http.Handler {
 	e.Use(gin.Logger())
 	e.Use(gin.Recovery())
 	e.Use(ginprom.PromMiddleware(nil))
+	e.Use(middleware.TraceMiddleware())
 
 	memberRepo, err := postgres.NewMemberRepository(db)
 	must(err)
@@ -79,10 +77,12 @@ func routerAPI(db *sql.DB) http.Handler {
 	must(err)
 
 	authRepo, err := postgres.NewMemberRepository(db)
+	must(err)
 	authService, err := auth.NewService(authRepo, nil)
 	must(err)
 
-	member.Routes(e, memberService)
+	member.Routes(e, memberService, authService)
+	auth.Routes(e, authService)
 
 	return e
 }
@@ -94,12 +94,7 @@ func routerMetrics() http.Handler {
 	e.GET("/metrics", ginprom.PromHandler(promhttp.Handler()))
 	e.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-	e.GET("/pong", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "ping",
+			"message": "ok",
 		})
 	})
 	return e
@@ -111,8 +106,12 @@ func must(err error) {
 	}
 }
 
-func connectPostgres()  {
-	
+func connectPostgres() (*sql.DB, error) {
+	conn := fmt.Sprintf(
+		"dbname=%s user=%s password=%s host=%s port=%s sslmode=%s",
+		dbName, dbUser, dbPass, dbHost, dbPort, sslMode,
+	)
+	return sql.Open("postgres", conn)
 }
 
 func connectRedis()  {

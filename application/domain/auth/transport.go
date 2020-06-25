@@ -1,21 +1,21 @@
-package member
+package auth
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mongmx/system-d/application/domain/auth"
 )
 
 var s Service
 
 // Routes in the domain route
-func Routes(route *gin.Engine, s Service, as auth.Service) {
-	r := route.Group("/member/v1/admin")
+func Routes(route *gin.Engine, service Service) {
+	s = service
+	r := route.Group("/auth/v1")
 	{
-		r.GET("/lists", memberAllEndpoint(s, as))
-		r.GET("/list/:id", memberGetEndpoint(s, as))
-		r.POST("/list", mustLogin(), memberListEndpoint(s, as))
+		r.GET("/login", loginEndpoint(s))
+		r.GET("/token/refresh", refreshTokenEndpoint(s))
+		r.POST("/token/revoke/:id", mustLogin(), revokeTokenEndpoint(s))
 	}
 }
 
