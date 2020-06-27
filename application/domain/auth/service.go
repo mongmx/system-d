@@ -1,9 +1,13 @@
 package auth
 
 import (
+	"os"
+	"time"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	"github.com/casbin/redis-adapter/v2"
+	redisadapter "github.com/casbin/redis-adapter/v2"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Service is the auth service
@@ -12,10 +16,12 @@ type Service interface {
 	GetAllResource()
 	GetAllDomain()
 	Authorize(user, domain, resource string) (bool, error)
+	CheckUser(username, password string) (*User, error)
+	CreateToken(user *User) (string, error)
 }
 
 type service struct {
-	repo Repository
+	repo     Repository
 	enforcer *casbin.Enforcer
 }
 
@@ -54,13 +60,30 @@ func (s *service) GetAllResource() {
 }
 
 func (s *service) GetAllDomain() {
-	
+
 }
 
 func (s *service) Authorize(user, domain, resource string) (bool, error) {
 	// ps := s.enforcer.GetPermissionsForUserInDomain("user"+user, "domain"+domain)
 	// for _, p := range ps {
-		
+
 	// }
 	return true, nil
+}
+
+func (s *service) CheckUser(username, Password string) (*User, error) {
+	return &User{
+		ID: "zzzzzz",
+	}, nil
+}
+
+func (s *service) CreateToken(user *User) (string, error) {
+	//Creating Access Token
+	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd") //this should be in an env file
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["session_id"] = user.ID
+	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	return at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 }

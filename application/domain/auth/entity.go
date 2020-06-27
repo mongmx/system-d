@@ -7,5 +7,5 @@ type Auth struct {
 
 // User entity
 type User struct {
-	
+	ID string
 }

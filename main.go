@@ -66,10 +66,13 @@ func main() {
 
 func routerAPI(db *sql.DB) http.Handler {
 	e := gin.New()
-	e.Use(gin.Logger())
-	e.Use(gin.Recovery())
-	e.Use(ginprom.PromMiddleware(nil))
-	e.Use(middleware.TraceMiddleware())
+	e.Use(
+		gin.Logger(),
+		gin.Recovery(),
+		ginprom.PromMiddleware(nil),
+		middleware.TraceMiddleware(),
+		// middleware.LoggerToFile(),
+	)
 
 	memberRepo, err := postgres.NewMemberRepository(db)
 	must(err)
@@ -89,8 +92,7 @@ func routerAPI(db *sql.DB) http.Handler {
 
 func routerMetrics() http.Handler {
 	e := gin.New()
-	e.Use(gin.Logger())
-	e.Use(gin.Recovery())
+	e.Use(gin.Logger(), gin.Recovery())
 	e.GET("/metrics", ginprom.PromHandler(promhttp.Handler()))
 	e.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -114,6 +116,6 @@ func connectPostgres() (*sql.DB, error) {
 	return sql.Open("postgres", conn)
 }
 
-func connectRedis()  {
-	
+func connectRedis() {
+
 }
